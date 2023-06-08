@@ -1,0 +1,26 @@
+body {
+  font-family: Arial, sans-serif;
+}
+
+#product-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+}
+
+#product-list div {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 10px;
+  margin: 10px;
+  width: 200px;
+  text-align: center;
+}
+
+#product-list div h2 {
+  font-size: 1.2em;
+}
+
+#product-list div p {
+  font-size: 0.9em;
+}
