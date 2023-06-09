@@ -9,12 +9,25 @@ window.onload = () => {
             <h2>${product.name}</h2>
             <p>${product.description}</p>
             <p>Price: $${product.price}</p>
-            <a href="/products/${product.id}">See details</a>
+            <p>Stock: ${product.stock}</p>
+            <button onclick="purchaseProduct(${product.id})">Purchase</button>
           `;
           productDiv.appendChild(productElement);
         });
       });
   };
 
-  console.log("duf")
-  
+
+const purchaseProduct = (productId) => {
+  fetch(`http://localhost:3000/products/${productId}/purchase`, {
+    method: 'POST'
+  })
+  .then(response => response.json())
+  .then(result => {
+    alert(result.message);
+    location.reload();
+  })
+  .catch(error => {
+    alert('Faild to purchase product');
+  });
+}
