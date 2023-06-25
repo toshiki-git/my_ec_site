@@ -2,7 +2,17 @@ const express = require("express");
 const app = express();
 const ProductModel = require("../models/Product.js");
 
-app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.post("/submit", async (req, res) => {
+  const { id, name, description, price, stock } = req.body;
+  try {
+    await addProduct(id, name, description, price, stock);
+    res.send("Product saved!");
+  } catch (err) {
+    res.status(500).send("Error saving product!");
+  }
+});
 
 app.get("/products", async (req, res) => {
   const products = await ProductModel.find({});
@@ -20,6 +30,22 @@ app.get("/products/:id", async (req, res) => {
     res.json(product);
   }
 });
+
+const addProduct = async (id, name, description, price, stock) => {
+  const newProduct = new ProductModel({
+    id,
+    name,
+    description,
+    price,
+    stock,
+  });
+  try {
+    const result = await newProduct.save();
+    console.log("Product saved:", result);
+  } catch (err) {
+    console.error("Error saving product:", err);
+  }
+};
 
 /* app.post("/products/:id/purchase", (req, res) => {
   const productId = Number(req.params.id);
