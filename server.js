@@ -10,13 +10,13 @@ mongoose
   .then(() => console.log("DB connected"))
   .catch((err) => console.log(err));
 
-let shoppingCart = [];
+//let shoppingCart = [];
 
 const productRouter = require("./routes/productRoutes.js");
 app.use(productRouter);
 
 app.get("/cart", (req, res) => {
-  res.json(shoppingCart);
+  res.sendFile(__dirname + "/public/cart.html");
 });
 
 app.listen(port, () => {
