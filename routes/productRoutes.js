@@ -8,9 +8,22 @@ app.post("/submit", async (req, res) => {
   const { id, name, description, price, stock } = req.body;
   try {
     await addProduct(id, name, description, price, stock);
-    res.send("Product saved!");
+    res.redirect("/");
+    /* alert("Product saved!"); */
+    console.log("Product saved!");
   } catch (err) {
     res.status(500).send("Error saving product!");
+  }
+});
+
+app.post("/delete", async (req, res) => {
+  const id = req.body.deleteID;
+  try {
+    await deleteProduct(id);
+    res.redirect("/");
+    console.log("Product deleted!");
+  } catch (err) {
+    res.status(500).send("Error deleting product!");
   }
 });
 
@@ -44,6 +57,19 @@ const addProduct = async (id, name, description, price, stock) => {
     console.log("Product saved:", result);
   } catch (err) {
     console.error("Error saving product:", err);
+  }
+};
+
+const deleteProduct = async (id) => {
+  try {
+    const result = await ProductModel.deleteOne({ id: id });
+    if (result.deletedCount === 0) {
+      console.log(`No product found with id: ${id}`);
+    } else {
+      console.log(`Product with id: ${id} was deleted`);
+    }
+  } catch (err) {
+    console.error("Error deleting product:", err);
   }
 };
 
