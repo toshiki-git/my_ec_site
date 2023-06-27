@@ -12,21 +12,45 @@ window.onload = () => {
   if (window.location.pathname === "/cart") {
     loadCart(shoppingCart);
     console.log(shoppingCart);
+    document
+      .getElementById("purchaseButton")
+      .addEventListener("click", () => purchaseProduct(shoppingCart));
   }
 };
 
-const purchaseProduct = (productId) => {
-  fetch(`http://localhost:3000/products/${productId}/purchase`, {
-    method: "POST",
-  })
-    .then((res) => res.json())
-    .then((result) => {
-      alert(result.message);
-      location.reload();
-    })
-    .catch((error) => {
-      alert("Faild to purchase product");
+const purchaseProduct = async (cart) => {
+  try {
+    // Prepare the order data
+    const order = cart.map((product) => {
+      return { id: product.id, quantity: product.quantity };
     });
+
+    console.log(order);
+
+    // Send a POST request to the server with the order data
+    const response = await fetch("http://localhost:3000/purchase", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(order),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to purchase products");
+    }
+
+    const result = await response.json();
+
+    // Clear the shopping cart and update sessionStorage
+    shoppingCart = [];
+    sessionStorage.setItem("shoppingCart", JSON.stringify(shoppingCart));
+
+    alert(result.message);
+    location.reload();
+  } catch (error) {
+    console.log(error.message);
+  }
 };
 
 const loadProducts = async () => {
@@ -37,6 +61,10 @@ const loadProducts = async () => {
     let productDiv = document.getElementById("product-list");
     products.forEach((product) => {
       let productElement = document.createElement("div");
+      let quantityOptions = "";
+      for (let i = 1; i <= product.stock; i++) {
+        quantityOptions += `<option value="${i}">${i}</option>`;
+      }
       productElement.innerHTML = `
       <div class="card" style="width: 18rem;">
         <div class="card-body">
@@ -44,7 +72,8 @@ const loadProducts = async () => {
           <p class="card-text">${product.description}</p>
           <p class="card-text">Price: $${product.price}</p>
           <p class="card-text">Stock: ${product.stock}</p>
-          <button onclick="addToCart(${product.id})" class="btn btn-primary">Add to Cart</button>
+          <select id="quantity${product.id}">${quantityOptions}</select>
+          <button onclick="addToCart(${product.id}, document.getElementById('quantity${product.id}').value)" class="btn btn-primary">Add to Cart</button>
         </div>
       </div>
       `;
@@ -55,9 +84,15 @@ const loadProducts = async () => {
   }
 };
 
-const addToCart = async (id) => {
+const addToCart = async (id, quantity) => {
+  quantity = Number(quantity);
   let res = await fetch(`http://localhost:3000/products/${id}`);
   const product = await res.json();
+
+  if (quantity > product.stock) {
+    alert("You cannot add more of this product, limited stock!");
+    return;
+  }
 
   const productWithQuantity = { ...product, quantity: 1 };
 
@@ -66,8 +101,15 @@ const addToCart = async (id) => {
   );
 
   if (existingProductIndex !== -1) {
+    if (
+      shoppingCart[existingProductIndex].quantity + quantity >
+      product.stock
+    ) {
+      alert("You cannot add more of this product, limited stock!");
+      return;
+    }
     // 既存の製品が見つかった場合、その数量を増やします
-    shoppingCart[existingProductIndex].quantity++;
+    shoppingCart[existingProductIndex].quantity += quantity;
   } else {
     // 既存の製品が見つからなかった場合、新しい製品をカートに追加します
     shoppingCart.push(productWithQuantity);
