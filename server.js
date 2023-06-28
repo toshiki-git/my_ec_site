@@ -21,6 +21,14 @@ app.get("/cart", (req, res) => {
   res.sendFile(__dirname + "/public/cart.html");
 });
 
+app.get("/register", (req, res) => {
+  res.sendFile(__dirname + "/public/register.html");
+});
+
+app.get("/delete", (req, res) => {
+  res.sendFile(__dirname + "/public/delete.html");
+});
+
 app.post("/purchase", async (req, res) => {
   try {
     // Parse the order from the request body
