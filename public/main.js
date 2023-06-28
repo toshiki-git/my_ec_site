@@ -61,19 +61,28 @@ const loadProducts = async () => {
     let productDiv = document.getElementById("product-list");
     products.forEach((product) => {
       let productElement = document.createElement("div");
-      let quantityOptions = "";
-      for (let i = 1; i <= product.stock; i++) {
-        quantityOptions += `<option value="${i}">${i}</option>`;
-      }
+      let quantityOptions = quantityOption(product.stock);
+
       productElement.innerHTML = `
       <div class="card" style="width: 18rem;">
         <div class="card-body">
+        ${
+          product.stock === 0
+            ? '<div class="alert alert-danger" role="alert">SOLD OUT</div>'
+            : ""
+        }
           <h2 class="card-title">${product.name}</h2>
           <p class="card-text">${product.description}</p>
           <p class="card-text">Price: $${product.price}</p>
           <p class="card-text">Stock: ${product.stock}</p>
           <select id="quantity${product.id}">${quantityOptions}</select>
-          <button onclick="addToCart(${product.id}, document.getElementById('quantity${product.id}').value)" class="btn btn-primary">Add to Cart</button>
+          <button onclick="addToCart(${
+            product.id
+          }, document.getElementById('quantity${
+        product.id
+      }').value)" class="btn btn-primary" ${
+        product.stock === 0 ? "disabled" : ""
+      }>Add to Cart</button>
         </div>
       </div>
       `;
@@ -85,34 +94,24 @@ const loadProducts = async () => {
 };
 
 const addToCart = async (id, quantity) => {
-  quantity = Number(quantity);
+  let qty = Number(quantity);
   let res = await fetch(`http://localhost:3000/products/${id}`);
   const product = await res.json();
-
-  if (quantity > product.stock) {
-    alert("You cannot add more of this product, limited stock!");
-    return;
-  }
-
-  const productWithQuantity = { ...product, quantity: 1 };
 
   const existingProductIndex = shoppingCart.findIndex(
     (item) => item.id === product.id
   );
 
   if (existingProductIndex !== -1) {
-    if (
-      shoppingCart[existingProductIndex].quantity + quantity >
-      product.stock
-    ) {
+    if (shoppingCart[existingProductIndex].quantity + qty > product.stock) {
       alert("You cannot add more of this product, limited stock!");
       return;
     }
     // 既存の製品が見つかった場合、その数量を増やします
-    shoppingCart[existingProductIndex].quantity += quantity;
+    shoppingCart[existingProductIndex].quantity += qty;
   } else {
     // 既存の製品が見つからなかった場合、新しい製品をカートに追加します
-    shoppingCart.push(productWithQuantity);
+    shoppingCart.push({ ...product, quantity: qty });
   }
 
   sessionStorage.setItem("shoppingCart", JSON.stringify(shoppingCart));
@@ -122,6 +121,7 @@ const addToCart = async (id, quantity) => {
 const loadCart = (cart) => {
   let cartDiv = document.getElementById("cart-list");
   cart.forEach((product) => {
+    let quantityOptions = quantityOption(product.stock);
     let cartElement = document.createElement("div");
     cartElement.innerHTML = `
     <div class="card" style="width: 18rem;">
@@ -130,8 +130,9 @@ const loadCart = (cart) => {
         <p class="card-text">${product.description}</p>
         <p class="card-text">Price: $${product.price}</p>
         <p class="card-text">Quantity: ${product.quantity}</p>
-        <button class="btn btn-primary mt-3" onclick="addToCart(${product.id})">Add</button>
-        <button class="btn btn-primary mt-3" onclick="removeFromCart(${product.id})">Remove</button>
+        <select id="cartQuantity${product.id}">${quantityOptions}</select>
+        <button class="btn btn-primary mt-3" onclick="changeQuantity(${product.id}, document.getElementById('cartQuantity${product.id}').value)">Change</button>
+        <button class="btn btn-primary mt-3"  onclick="removeFromCart(${product.id})">Remove</button>
       </div>
     </div>
     `;
@@ -141,6 +142,14 @@ const loadCart = (cart) => {
   let totalPrice = calculateTotalPrice(cart);
   // toFixed(2) ensures there are two decimal places
   totalPriceElement.textContent = `Total Price: $${totalPrice.toFixed(2)}`;
+};
+
+const quantityOption = (stock) => {
+  let quantityOptions = "";
+  for (let i = 1; i <= stock; i++) {
+    quantityOptions += `<option value="${i}">${i}</option>`;
+  }
+  return quantityOptions;
 };
 
 const calculateTotalPrice = (cart) => {
@@ -164,6 +173,27 @@ const removeFromCart = (id) => {
       shoppingCart.splice(existingProductIndex, 1);
     }
   }
+  sessionStorage.setItem("shoppingCart", JSON.stringify(shoppingCart));
+  location.reload();
+};
+
+const changeQuantity = async (id, newQuantity) => {
+  let qty = Number(newQuantity);
+  const product = shoppingCart.find((item) => item.id === id);
+
+  // もし新しい数量が在庫を超えていたら、エラーメッセージを表示する
+  if (qty > product.stock) {
+    alert("You cannot add more of this product, limited stock!");
+    return;
+  }
+
+  const existingProductIndex = shoppingCart.findIndex((item) => item.id === id);
+
+  if (existingProductIndex !== -1) {
+    // 既存の商品が見つかった場合、その数量を新しい数量に変更する
+    shoppingCart[existingProductIndex].quantity = qty;
+  }
+
   sessionStorage.setItem("shoppingCart", JSON.stringify(shoppingCart));
   location.reload();
 };
