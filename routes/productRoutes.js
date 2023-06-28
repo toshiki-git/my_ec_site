@@ -5,9 +5,9 @@ const ProductModel = require("../models/Product.js");
 app.use(express.urlencoded({ extended: true }));
 
 app.post("/submit", async (req, res) => {
-  const { id, name, description, price, stock } = req.body;
+  const { id, name, description, price, stock, image } = req.body;
   try {
-    await addProduct(id, name, description, price, stock);
+    await addProduct(id, name, description, price, stock, image);
     res.redirect("/");
     /* alert("Product saved!"); */
     console.log("Product saved!");
@@ -44,13 +44,14 @@ app.get("/products/:id", async (req, res) => {
   }
 });
 
-const addProduct = async (id, name, description, price, stock) => {
+const addProduct = async (id, name, description, price, stock, image) => {
   const newProduct = new ProductModel({
     id,
     name,
     description,
     price,
     stock,
+    image,
   });
   try {
     const result = await newProduct.save();

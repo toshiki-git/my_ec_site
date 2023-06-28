@@ -27,6 +27,9 @@ const ProductSchema = new mongoose.Schema({
       if (value < 0) throw new Error("Value must be positive");
     },
   },
+  image: {
+    type: String,
+  },
 });
 
 const Product = mongoose.model("Product", ProductSchema);

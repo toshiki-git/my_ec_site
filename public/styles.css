@@ -43,3 +43,8 @@ header {
 /* #product-list div p {
   font-size: 0.9em;
 } */
+
+img {
+  width: 200px;
+  height: 200px;
+}

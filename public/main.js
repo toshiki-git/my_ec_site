@@ -64,28 +64,29 @@ const loadProducts = async () => {
       let quantityOptions = quantityOption(product.stock);
 
       productElement.innerHTML = `
-      <div class="card" style="width: 18rem;">
-        <div class="card-body">
-        ${
-          product.stock === 0
-            ? '<div class="alert alert-danger" role="alert">SOLD OUT</div>'
-            : ""
-        }
-          <h2 class="card-title">${product.name}</h2>
-          <p class="card-text">${product.description}</p>
-          <p class="card-text">Price: $${product.price}</p>
-          <p class="card-text">Stock: ${product.stock}</p>
-          <select id="quantity${product.id}">${quantityOptions}</select>
-          <button onclick="addToCart(${
-            product.id
-          }, document.getElementById('quantity${
+  <div class="card shadow mb-4" style="width: 18rem;">
+    <img class="card-img-top" src=${product.image} alt="Description of image">
+    <div class="card-body">
+    ${
+      product.stock === 0
+        ? '<div class="alert alert-danger" role="alert">SOLD OUT</div>'
+        : ""
+    }
+      <h2 class="card-title">${product.name}</h2>
+      <p class="card-text">${product.description}</p>
+      <p class="card-text">Price: $${product.price}</p>
+      <p class="card-text">Stock: ${product.stock}</p>
+      <select id="quantity${product.id}">${quantityOptions}</select>
+      <button onclick="addToCart(${
         product.id
-      }').value)" class="btn btn-primary" ${
+      }, document.getElementById('quantity${
+        product.id
+      }').value)" class="btn btn-primary mt-2" ${
         product.stock === 0 ? "disabled" : ""
       }>Add to Cart</button>
-        </div>
-      </div>
-      `;
+    </div>
+  </div>
+  `;
       productDiv.appendChild(productElement);
     });
   } catch (error) {
